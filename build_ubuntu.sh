@@ -23,10 +23,10 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DLLVM_BUILD_EXAMPLES=OFF \
 				-DLIBCXX_INCLUDE_BENCHMARKS=OFF \
 				-DLLVM_OPTIMIZED_TABLEGEN=ON \
-				-CMAKE_INSTALL_PREFIX="./llvm"
+				-DCMAKE_INSTALL_PREFIX="./llvm" \
 				-DLLVM_TARGETS_TO_BUILD="X86" \
-                                -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
-                                -DLLVM_RUNTIME_TARGETS="x86_64-unknown-linux-gnu"
+                -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
+                -DLLVM_RUNTIME_TARGETS="x86_64-unknown-linux-gnu"
 ninja -C build 
 ninja -C build runtimes
 ninja -C build install
