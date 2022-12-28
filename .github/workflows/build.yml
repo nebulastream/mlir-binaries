@@ -25,13 +25,8 @@ jobs:
       - name: Build Docker
         id: builddocker
         working-directory: ${{ github.workspace }}/docker/
-        run: docker build  -t nes_clang_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .
-      - name: Install vcpkg
-        id: bootstrapvcpkg
-        run: |
-          docker run -v ${{ github.workspace }}:/build_dir --rm nes_clang_build_${{ matrix.osversion }} ./build_dir/vcpkg/bootstrap-vcpkg.sh -disableMetrics
-        shell: bash
-      - name: Install dependencies in manifest mode
+        run: docker build  -t nes_clang_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .     
+      - name: Build Clang
         id: installdeps
         run: |
           docker run -v ${{ github.workspace }}:/build_dir --rm nes_clang_build_${{ matrix.osversion }} \
