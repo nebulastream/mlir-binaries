@@ -11,6 +11,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
   build-essential \
   curl zip unzip tar \  
   pkg-config \
+  ninja-build \
   && apt-get clean -qq
 
 RUN wget --no-check-certificate -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
