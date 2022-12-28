@@ -25,12 +25,14 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DLLVM_BUILD_EXAMPLES=OFF \
 				-DLIBCXX_INCLUDE_BENCHMARKS=OFF \
 				-DLLVM_OPTIMIZED_TABLEGEN=ON \
-				-DCMAKE_INSTALL_PREFIX="/build_dir/llvm-project/llvm-install" \
+				-DCMAKE_INSTALL_PREFIX="/build_dir/clang" \
 				-DLLVM_TARGETS_TO_BUILD="X86" \
+				-DLLVM_BUILD_TOOLS=OFF \
 			#	-DLLVM_EXPERIMENTAL_TARGETS_TO_BUILD="NVPTX" \
                 -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
                 -DLLVM_RUNTIME_TARGETS="x86_64-unknown-linux-gnu"
 ninja -C build 
+ninja -C build clang-format
 ninja -C build runtimes
 ninja -C build install
 #ninja -C build mlir-libraries mlir-cmake-exports mlir-headers

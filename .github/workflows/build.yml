@@ -34,7 +34,7 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a nes-clang-${{ steps.vars.outputs.tag }}-${{ matrix.osversion }}.7z llvm-project/llvm-install -mx9 -aoa  
+          7z a nes-clang-${{ steps.vars.outputs.tag }}-${{ matrix.osversion }}.7z clang -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
@@ -46,6 +46,7 @@ jobs:
         if: always()
         run: |
           rm -rf llvm-project 
+          rm -rf clang
       - name: Remove docker image
         id: removedockerimage
         if: always()
