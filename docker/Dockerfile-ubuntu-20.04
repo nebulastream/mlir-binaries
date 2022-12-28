@@ -3,8 +3,8 @@ FROM ubuntu:20.04
 RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
   git \
   wget \
+  python2 \
   python3 \
-  python \
   tar \
   p7zip-full \
   cmake \
@@ -12,8 +12,15 @@ RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
   build-essential \
   curl zip unzip tar \  
   pkg-config \
+  ninja-build \
   && apt-get clean -qq
+
+RUN wget --no-check-certificate -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+RUN add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-15  main'
+RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
+  clang-15 && apt-get clean -qq
 
 ADD ./entrypoint-build.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
+
