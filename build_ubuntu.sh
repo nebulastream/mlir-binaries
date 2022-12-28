@@ -27,6 +27,17 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
                                 -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
                                 -DLLVM_RUNTIME_TARGETS="x86_64-unknown-linux-gnu"
 ninja -C build runtimes
+
+# remove stuff from build
+rm -rf /build/utils
+rm -rf /build/unittests
+rm -rf /build/tools
+rm -rf /build/third-party
+rm -rf /build/test
+rm -rf /build/runtimes
+rm -rf /build/projects
+rm -rf /build/CMakeFiles
+rm -rf /build/benchmarks
 #ninja -C build check-runtimes
 
 
