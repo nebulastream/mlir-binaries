@@ -1,0 +1,60 @@
+name: NES Clang builder
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-x64-linux:
+    timeout-minutes: 360
+    env:
+      VCPKG_DEP_LIST: x64-linux
+      VCPKG_FEATURE_FLAGS: -binarycaching
+    runs-on: [self-hosted, linux, X64, dep-builder]
+    strategy:
+      matrix:
+        osversion: [ubuntu-22.04]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Set output vars to the actual tag name
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Build Docker
+        id: builddocker
+        working-directory: ${{ github.workspace }}/docker/
+        run: docker build  -t nes_clang_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .
+      - name: Install vcpkg
+        id: bootstrapvcpkg
+        run: |
+          docker run -v ${{ github.workspace }}:/build_dir --rm nes_clang_build_${{ matrix.osversion }} ./build_dir/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+        shell: bash
+      - name: Install dependencies in manifest mode
+        id: installdeps
+        run: |
+          docker run -v ${{ github.workspace }}:/build_dir --rm nes_clang_build_${{ matrix.osversion }} \
+          ./build_dir/build_ubuntu.sh
+      - name: Compress artifacts
+        id: compressdeps
+        run: |
+          7z a nes-clang-${{ steps.vars.outputs.tag }}-${{ matrix.osversion }}.7z llvm-project -mx9 -aoa  
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        id: createrelease
+        with:
+          files: |
+            nes-clang-${{ steps.vars.outputs.tag }}-${{ matrix.osversion }}.7z
+      - name: Clean build artifacts
+        id: cleanbuildartifacts
+        if: always()
+        run: |
+          rm -rf llvm-project 
+      - name: Remove docker image
+        id: removedockerimage
+        if: always()
+        run: |
+          test -n "$(docker image ls -q nes_clang_build_${{ matrix.osversion }})" && \
+          docker image rm $(docker image ls -q nes_clang_build_${{ matrix.osversion }}) || \
+          true

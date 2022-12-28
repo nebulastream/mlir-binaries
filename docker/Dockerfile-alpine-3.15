@@ -1,0 +1,32 @@
+FROM alpine:3.15
+
+# https://devblogs.microsoft.com/cppblog/using-multi-stage-containers-for-c-development/
+RUN apk add --no-cache cmake --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+&& apk add --no-cache \
+    autoconf \
+    build-base \
+    binutils \
+    binutils-dev \
+    curl \
+    file \
+    gcc \
+    git \
+    g++ \
+    libgcc \
+    libtool \
+    linux-headers \
+    make \
+    musl-dev \
+    p7zip \
+    pkgconfig \
+    python3 \
+    py3-pip \
+    python2 \
+    tar \
+    unzip \
+    zip \
+    wget \
+&& pip3 install ninja
+
+ADD ./entrypoint-build.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
