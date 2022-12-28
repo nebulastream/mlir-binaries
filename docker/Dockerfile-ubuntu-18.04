@@ -16,7 +16,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
   && apt-get clean -qq
 
 RUN wget --no-check-certificate -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-RUN add-apt-repository 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15  main'
+RUN add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-15  main'
 RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
   clang-15 && apt-get clean -qq
 
