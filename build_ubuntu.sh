@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cd llvm-project
+cd /build_dir/llvm-project
 rm -rf ./build
 mkdir build
 cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
