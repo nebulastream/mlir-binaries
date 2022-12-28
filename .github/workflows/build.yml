@@ -34,7 +34,7 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a nes-clang-${{ steps.vars.outputs.tag }}-${{ matrix.osversion }}.7z llvm-project/build -mx9 -aoa  
+          7z a nes-clang-${{ steps.vars.outputs.tag }}-${{ matrix.osversion }}.7z llvm-project/llvm-install -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
