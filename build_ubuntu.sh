@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-git clone git@github.com:llvm/llvm-project.git
-git checkout llvmorg-15.0.6
 cd llvm-project
 rm -rf ./build
 mkdir build
