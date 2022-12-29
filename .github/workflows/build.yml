@@ -96,8 +96,6 @@ jobs:
         id: cleanbuildartifacts
         if: always()
         run: |
-          rm -rf llvm-project 
-          rm -rf .git
           rm -rf clang
       - name: Remove docker image
         id: removedockerimage
