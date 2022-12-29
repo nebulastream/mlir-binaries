@@ -112,7 +112,6 @@ jobs:
       VCPKG_FEATURE_FLAGS: -binarycaching
     runs-on: [ self-hosted, macos, ARM64]
     steps:
-      - uses: AutoModality/action-clean@v1
       - uses: lukka/get-cmake@latest
       - uses: actions/checkout@v2
         with:
@@ -147,7 +146,6 @@ jobs:
       VCPKG_FEATURE_FLAGS: -binarycaching
     runs-on: [ self-hosted, macos, X64, dep-builder ]
     steps:
-      - uses: AutoModality/action-clean@v1
       - uses: lukka/get-cmake@latest
       - uses: actions/checkout@v2
         with:
