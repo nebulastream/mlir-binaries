@@ -29,7 +29,8 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DLLVM_TARGETS_TO_BUILD="X86" \
 				-DLLVM_BUILD_TOOLS=OFF \
                 -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
-                -DLLVM_RUNTIME_TARGETS="x86_64-unknown-linux-gnu"
+                -DLLVM_RUNTIME_TARGETS="x86_64-pc-linux-gnu" \
+				-DLLVM_DEFAULT_TARGET_TRIPLE="x86_64-pc-linux-gnu" 
 ninja -C build 
 ninja -C build clang-format
 ninja -C build runtimes
