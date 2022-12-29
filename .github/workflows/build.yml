@@ -105,7 +105,7 @@ jobs:
           test -n "$(docker image ls -q nes_clang_build_${{ matrix.osversion }})" && \
           docker image rm $(docker image ls -q nes_clang_build_${{ matrix.osversion }}) || \
           true
-build-arm-osx:
+  build-arm-osx:
     timeout-minutes: 360
     env:
       VCPKG_DEP_LIST: arm64-osx
@@ -135,6 +135,41 @@ build-arm-osx:
         with:
           files: |
             nes-clang-15-osx-arm64.7z
+      - name: Clean build artifacts
+        id: cleanbuildartifacts
+        if: always()
+        run: |
+          rm -rf clang
+  build-arm-x64:
+    timeout-minutes: 360
+    env:
+      VCPKG_DEP_LIST: x64-osx
+      VCPKG_FEATURE_FLAGS: -binarycaching
+    runs-on: [ self-hosted, macos, X64, dep-builder ]
+    steps:
+      - uses: AutoModality/action-clean@v1
+      - uses: lukka/get-cmake@latest
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Set output vars to the actual tag name
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Build OSX x64 Clang
+        id: buildclang
+        run: |
+          ${{ github.workspace }}/build_osx-x64.sh
+        shell: bash
+      - name: Compress artifacts
+        id: compressdeps
+        run: |
+          7z a nes-clang-15-osx-x64.7z clang -mx9 -aoa  
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        id: createrelease
+        with:
+          files: |
+            nes-clang-15-osx-x64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
