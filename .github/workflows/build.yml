@@ -14,8 +14,9 @@ jobs:
     runs-on: [self-hosted, linux, X64, dep-builder]
     strategy:
       matrix:
-        osversion: [ubuntu-18_04, ubuntu-20_04, ubuntu-22_04]
+        osversion: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
     steps:
+      - uses: AutoModality/action-clean@v1
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
@@ -64,6 +65,7 @@ jobs:
       matrix:
         osversion: [ubuntu-22.04]
     steps:
+      - uses: AutoModality/action-clean@v1
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
