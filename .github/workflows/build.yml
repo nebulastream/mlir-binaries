@@ -13,6 +13,7 @@ jobs:
       VCPKG_FEATURE_FLAGS: -binarycaching
     runs-on: [self-hosted, linux, X64, dep-builder]
     strategy:
+      fail-fast: false
       matrix:
         osversion: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04]
     steps:
