@@ -4,6 +4,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
   git \
   wget \
   python \
+  apt-utils \
   python3 \
   tar \
   p7zip-full \
@@ -11,6 +12,7 @@ RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
   build-essential \
   curl zip unzip tar \  
   pkg-config \
+  apt-transport-https \
   && apt-get clean -qq
 
 
@@ -19,8 +21,8 @@ RUN cd ${HOME} && wget -O - https://apt.kitware.com/keys/kitware-archive-latest.
     && apt update && apt install -y kitware-archive-keyring && rm /etc/apt/trusted.gpg.d/kitware.gpg && apt update && apt install -y cmake ninja-build 
 
 RUN wget --no-check-certificate -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
-RUN add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-15  main'
-RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test && add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-15  main'
+RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -y \
   clang-15 && apt-get clean -qq
 
 ADD ./entrypoint-build.sh /entrypoint.sh
