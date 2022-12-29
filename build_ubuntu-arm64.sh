@@ -28,8 +28,7 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DCMAKE_INSTALL_PREFIX="/build_dir/clang" \
 				-DLLVM_TARGETS_TO_BUILD="AArch64" \
 				-DLLVM_BUILD_TOOLS=OFF \
-                -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
-                -DLLVM_RUNTIME_TARGETS="arm64-unknown-linux-gnu"
+                -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" 
 ninja -C build 
 ninja -C build clang-format
 ninja -C build runtimes
