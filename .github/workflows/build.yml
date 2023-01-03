@@ -98,6 +98,8 @@ jobs:
         if: always()
         run: |
           rm -rf clang
+          rm -rf llvm-project 
+          rm -rf .git
       - name: Remove docker image
         id: removedockerimage
         if: always()
@@ -139,7 +141,7 @@ jobs:
         if: always()
         run: |
           rm -rf clang
-  build-arm-x64:
+  build-x64-osx:
     timeout-minutes: 360
     env:
       VCPKG_DEP_LIST: x64-osx
@@ -173,3 +175,52 @@ jobs:
         if: always()
         run: |
           rm -rf clang
+  build-x64-linux-musl:
+    timeout-minutes: 360
+    env:
+      VCPKG_DEP_LIST: x64-linux-musl
+      VCPKG_FEATURE_FLAGS: -binarycaching
+    runs-on: [ self-hosted, linux, x64, dep-builder ]
+    strategy:
+      matrix:
+        osversion: [ alpine-3.15 ]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Set output vars to the actual tag name
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Build Docker
+        id: builddocker
+        working-directory: ${{ github.workspace }}/docker/
+        run: docker build  -t nes_clang_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .     
+      - name: Build Clang
+        id: installdeps
+        run: |
+          docker run -v ${{ github.workspace }}:/build_dir --rm nes_clang_build_${{ matrix.osversion }} \
+          ./build_dir/build_alpine_x64.sh
+      - name: Compress artifacts
+        id: compressdeps
+        run: |
+          7z a nes-clang-15-${{ matrix.osversion }}-X64.7z clang -mx9 -aoa  
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        id: createrelease
+        with:
+          files: |
+            nes-clang-15-${{ matrix.osversion }}-X64.7z
+      - name: Clean build artifacts
+        id: cleanbuildartifacts
+        if: always()
+        run: |
+          rm -rf llvm-project 
+          rm -rf .git
+          rm -rf clang
+      - name: Remove docker image
+        id: removedockerimage
+        if: always()
+        run: |
+          test -n "$(docker image ls -q nes_clang_build_${{ matrix.osversion }})" && \
+          docker image rm $(docker image ls -q nes_clang_build_${{ matrix.osversion }}) || \
+          true
