@@ -29,6 +29,7 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DLLVM_TARGETS_TO_BUILD="AArch64" \
 				-DLLVM_BUILD_TOOLS=OFF \
 				-DLLVM_ENABLE_TERMINFO=OFF \
+				-DLLVM_ENABLE_EH=ON\
                 -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" 
 ninja -C build 
 ninja -C build clang-format
