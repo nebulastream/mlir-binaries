@@ -30,6 +30,7 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DLLVM_BUILD_TOOLS=OFF \
 				-DLLVM_ENABLE_TERMINFO=OFF \
 				-DLLVM_ENABLE_EH=ON\
+				-DLLVM_ENABLE_RTTI=ON\
                 -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind;compiler-rt" \
 				-DCOMPILER_RT_ENABLE_IOS=OFF \
 				-DCOMPILER_RT_ENABLE_WATCHOS=OFF \
