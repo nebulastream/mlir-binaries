@@ -39,6 +39,7 @@ ninja -C build clang-format
 ninja -C build llvm-cov
 ninja -C build runtimes
 ninja -C build install
+ninja -C build install llvm-cov
 #ninja -C build mlir-libraries mlir-cmake-exports mlir-headers
 
 #ninja -C build check-runtimes
