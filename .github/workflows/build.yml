@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        osversion: [ubuntu-22.04, ubuntu-20.04, ubuntu-18.04]
+        osversion: [ubuntu-18.04]
     steps:
       - uses: AutoModality/action-clean@v1
       - uses: actions/checkout@v2
@@ -27,22 +27,22 @@ jobs:
       - name: Build Docker
         id: builddocker
         working-directory: ${{ github.workspace }}/docker/
-        run: docker build  -t nes_clang_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .     
+        run: docker build  -t nes_mlir_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .     
       - name: Build Clang
         id: installdeps
         run: |
-          docker run -v ${{ github.workspace }}:/build_dir --rm nes_clang_build_${{ matrix.osversion }} \
+          docker run -v ${{ github.workspace }}:/build_dir --rm nes_mlir_build_${{ matrix.osversion }} \
           ./build_dir/build_ubuntu-x64.sh
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a nes-clang-16-${{ matrix.osversion }}-X64.7z clang -mx9 -aoa  
+          7z a mlir-17.0.6-${{ matrix.osversion }}-X64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            nes-clang-16-${{ matrix.osversion }}-X64.7z
+            mlir-17.0.6-${{ matrix.osversion }}-X64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
@@ -54,8 +54,8 @@ jobs:
         id: removedockerimage
         if: always()
         run: |
-          test -n "$(docker image ls -q nes_clang_build_${{ matrix.osversion }})" && \
-          docker image rm $(docker image ls -q nes_clang_build_${{ matrix.osversion }}) || \
+          test -n "$(docker image ls -q nes_mlir_build_${{ matrix.osversion }})" && \
+          docker image rm $(docker image ls -q nes_mlir_build_${{ matrix.osversion }}) || \
           true
   build-arm-linux:
     env:
@@ -64,7 +64,7 @@ jobs:
     runs-on: [self-hosted, linux, ARM64, dep-builder]
     strategy:
       matrix:
-        osversion: [ubuntu-22.04]
+        osversion: [ubuntu-18.04]
     steps:
       - uses: AutoModality/action-clean@v1
       - uses: actions/checkout@v2
@@ -76,22 +76,22 @@ jobs:
       - name: Build Docker
         id: builddocker
         working-directory: ${{ github.workspace }}/docker/
-        run: docker build  -t nes_clang_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .     
+        run: docker build  -t nes_mlir_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .     
       - name: Build Clang
         id: installdeps
         run: |
-          docker run -v ${{ github.workspace }}:/build_dir --rm nes_clang_build_${{ matrix.osversion }} \
+          docker run -v ${{ github.workspace }}:/build_dir --rm nes_mlir_build_${{ matrix.osversion }} \
           ./build_dir/build_ubuntu-arm64.sh
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a nes-clang-16-${{ matrix.osversion }}-arm64.7z clang -mx9 -aoa  
+          7z a mlir-17.0.6-${{ matrix.osversion }}-arm64.7z clang -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            nes-clang-16-${{ matrix.osversion }}-arm64.7z
+            mlir-17.0.6-${{ matrix.osversion }}-arm64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
@@ -103,15 +103,15 @@ jobs:
         id: removedockerimage
         if: always()
         run: |
-          test -n "$(docker image ls -q nes_clang_build_${{ matrix.osversion }})" && \
-          docker image rm $(docker image ls -q nes_clang_build_${{ matrix.osversion }}) || \
+          test -n "$(docker image ls -q nes_mlir_build_${{ matrix.osversion }})" && \
+          docker image rm $(docker image ls -q nes_mlir_build_${{ matrix.osversion }}) || \
           true
   build-arm-osx:
     timeout-minutes: 360
     env:
       VCPKG_DEP_LIST: arm64-osx
       VCPKG_FEATURE_FLAGS: -binarycaching
-    runs-on: [ self-hosted, macos, ARM64]
+    runs-on: [self-hosted, macos, ARM64]
     steps:
       - uses: lukka/get-cmake@latest
       - uses: actions/checkout@v2
@@ -128,13 +128,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a nes-clang-16-osx-arm64.7z clang -mx9 -aoa  
+          7z a mlir-17.0.6-osx-arm64.7z clang -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            nes-clang-16-osx-arm64.7z
+            mlir-17.0.6-osx-arm64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
@@ -162,13 +162,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a nes-clang-16-osx-x64.7z clang -mx9 -aoa  
+          7z a mlir-17.0.6-osx-x64.7z clang -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            nes-clang-16-osx-x64.7z
+            mlir-17.0.6-osx-x64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
