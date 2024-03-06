@@ -28,7 +28,7 @@ jobs:
         id: builddocker
         working-directory: ${{ github.workspace }}/docker/
         run: docker build  -t nes_mlir_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .     
-      - name: Build Clang
+      - name: Build MLIR
         id: installdeps
         run: |
           docker run -v ${{ github.workspace }}:/build_dir --rm nes_mlir_build_${{ matrix.osversion }} \
@@ -49,7 +49,7 @@ jobs:
         run: |
           rm -rf llvm-project 
           rm -rf .git
-          rm -rf clang
+          rm -rf mlir
       - name: Remove docker image
         id: removedockerimage
         if: always()
@@ -77,7 +77,7 @@ jobs:
         id: builddocker
         working-directory: ${{ github.workspace }}/docker/
         run: docker build  -t nes_mlir_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .     
-      - name: Build Clang
+      - name: Build MLIR
         id: installdeps
         run: |
           docker run -v ${{ github.workspace }}:/build_dir --rm nes_mlir_build_${{ matrix.osversion }} \
@@ -85,7 +85,7 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-17.0.6-${{ matrix.osversion }}-arm64.7z clang -mx9 -aoa  
+          7z a mlir-17.0.6-${{ matrix.osversion }}-arm64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
@@ -96,7 +96,7 @@ jobs:
         id: cleanbuildartifacts
         if: always()
         run: |
-          rm -rf clang
+          rm -rf mlir
           rm -rf llvm-project 
           rm -rf .git
       - name: Remove docker image
@@ -120,15 +120,15 @@ jobs:
       - name: Set output vars to the actual tag name
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-      - name: Build OSX ARM Clang
-        id: buildclang
+      - name: Build OSX ARM MLIR
+        id: buildmlir
         run: |
           ${{ github.workspace }}/build_osx-arm64.sh
         shell: bash
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-17.0.6-osx-arm64.7z clang -mx9 -aoa  
+          7z a mlir-17.0.6-osx-arm64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
@@ -139,7 +139,7 @@ jobs:
         id: cleanbuildartifacts
         if: always()
         run: |
-          rm -rf clang
+          rm -rf mlir
   build-x64-osx:
     timeout-minutes: 360
     env:
@@ -154,15 +154,15 @@ jobs:
       - name: Set output vars to the actual tag name
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-      - name: Build OSX x64 Clang
-        id: buildclang
+      - name: Build OSX x64 MLIR
+        id: buildmlir
         run: |
           ${{ github.workspace }}/build_osx-x64.sh
         shell: bash
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-17.0.6-osx-x64.7z clang -mx9 -aoa  
+          7z a mlir-17.0.6-osx-x64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
@@ -173,4 +173,4 @@ jobs:
         id: cleanbuildartifacts
         if: always()
         run: |
-          rm -rf clang
+          rm -rf mlir

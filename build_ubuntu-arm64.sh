@@ -18,7 +18,7 @@ rm -rf ./build
 mkdir build
 cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 			    	-DLLVM_ENABLE_PROJECTS="mlir"   \
-				-DBOOTSTRAP_LLVM_ENABLE_LTO=ON \
+				-DBOOTSTRAP_LLVM_ENABLE_LTO=OFF \
 				-DLLVM_INCLUDE_EXAMPLES=OFF    \
 				-DLLVM_INCLUDE_TESTS=OFF \
 				-DLLVM_INCLUDE_BENCHMARKS=OFF \
@@ -32,11 +32,11 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DLLVM_ENABLE_Z3_SOLVER=OFF 
 
 ninja -j4 -C build 
-ninja -j4 -C build clang-format
-ninja -j4 -C build llvm-cov
+#ninja -j4 -C build clang-format
+#ninja -j4 -C build llvm-cov
 ninja -j4 -C build runtimes
 ninja -j4 -C build install
-ninja -j4 -C build install llvm-cov
+#ninja -j4 -C build install llvm-cov
 #ninja -C build mlir-libraries mlir-cmake-exports mlir-headers
 
 # remove stuff from build
