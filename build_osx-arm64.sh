@@ -12,14 +12,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+#  -DLLVM_BUILD_LLVM_DYLIB=ON \
 cd ./llvm-project
 rm -rf ./build
 mkdir build
 cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
-			        -DLLVM_DYLIB_COMPONENTS=Native \
 				-DLLVM_ENABLE_PROJECTS="mlir"   \
-				-DBOOTSTRAP_LLVM_ENABLE_LTO=OFF \
 				-DLLVM_INCLUDE_EXAMPLES=OFF    \
 				-DLLVM_INCLUDE_TESTS=OFF \
 				-DLLVM_INCLUDE_BENCHMARKS=OFF \
@@ -31,6 +29,7 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DLLVM_BUILD_TOOLS=OFF \
 				-DLLVM_ENABLE_TERMINFO=OFF \
 				-DLLVM_ENABLE_Z3_SOLVER=OFF \
+				-DLLVM_ENABLE_ZSTD=OFF \
 				-DCOMPILER_RT_ENABLE_IOS=OFF \
 				-DCOMPILER_RT_ENABLE_WATCHOS=OFF \
 				-DCOMPILER_RT_ENABLE_TVOS=OFF

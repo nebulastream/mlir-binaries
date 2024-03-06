@@ -28,6 +28,7 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DCMAKE_INSTALL_PREFIX="/build_dir/mlir" \
 				-DLLVM_TARGETS_TO_BUILD="AArch64" \
 				-DLLVM_BUILD_TOOLS=OFF \
+				-DLLVM_ENABLE_ZSTD=OFF \
 				-DLLVM_ENABLE_TERMINFO=OFF \
 				-DLLVM_ENABLE_Z3_SOLVER=OFF 
 
