@@ -4,7 +4,7 @@ cd ./llvm-project
 rm -rf ./build
 mkdir build
 cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
-			   	 -DLLVM_ENABLE_PROJECTS="mlir"   \
+			   	 -DLLVM_ENABLE_PROJECTS="mlir,llvm"   \
 				-DBOOTSTRAP_LLVM_ENABLE_LTO=OFF \
 				-DLLVM_ENABLE_ZLIB="OFF" \
 				-DLLVM_INCLUDE_EXAMPLES=OFF    \
