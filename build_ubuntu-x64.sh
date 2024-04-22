@@ -30,6 +30,7 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DLLVM_BUILD_TOOLS=OFF \
 				-DLLVM_ENABLE_TERMINFO=OFF \
 				-DLLVM_ENABLE_ZSTD=OFF \
+				-DLLVM_ENABLE_ZLIB="OFF" \
 				-DLLVM_ENABLE_Z3_SOLVER=OFF 
 ninja -C build 
 #ninja -C build clang-format
