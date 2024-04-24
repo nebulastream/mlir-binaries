@@ -1,0 +1,20 @@
+FROM ubuntu:23.04
+RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
+  apt-transport-https \
+  git \
+  wget \
+  python2 \
+  python3 \
+  tar \
+  p7zip-full \
+  cmake \
+  software-properties-common \
+  build-essential \
+  curl zip unzip tar \  
+  pkg-config \
+  ninja-build \
+  && apt-get clean -qq
+
+ADD ./entrypoint-build.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
