@@ -36,13 +36,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-19.1.0-${{ matrix.osversion }}-X64.7z mlir -mx9 -aoa  
+          7z a mlir-19.1.6-${{ matrix.osversion }}-X64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            mlir-19.1.0-${{ matrix.osversion }}-X64.7z
+            mlir-19.1.6-${{ matrix.osversion }}-X64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
@@ -85,13 +85,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-19.1.0-${{ matrix.osversion }}-arm64.7z mlir -mx9 -aoa  
+          7z a mlir-19.1.6-${{ matrix.osversion }}-arm64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            mlir-19.1.0-${{ matrix.osversion }}-arm64.7z
+            mlir-19.1.6-${{ matrix.osversion }}-arm64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
@@ -128,13 +128,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-19.1.0-osx-arm64.7z mlir -mx9 -aoa  
+          7z a mlir-19.1.6-osx-arm64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            mlir-19.1.0-osx-arm64.7z
+            mlir-19.1.6-osx-arm64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
@@ -162,13 +162,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-19.1.0-osx-x64.7z mlir -mx9 -aoa  
+          7z a mlir-19.1.6-osx-x64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            mlir-19.1.0-osx-x64.7z
+            mlir-19.1.6-osx-x64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
