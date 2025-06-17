@@ -1,5 +1,8 @@
 name: NES MLIR builder
 
+env:
+  MLIR_VERSION: 20.1.5
+
 on:
   push:
     tags:
@@ -11,11 +14,11 @@ jobs:
     env:
       VCPKG_DEP_LIST: x64-linux
       VCPKG_FEATURE_FLAGS: -binarycaching
-    runs-on: [self-hosted, linux, X64, dep-builder]
+    runs-on: [self-hosted, linux, x64]
     strategy:
       fail-fast: false
       matrix:
-        osversion: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        osversion: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - uses: AutoModality/action-clean@v1
       - uses: actions/checkout@v2
@@ -36,13 +39,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-19.1.6-${{ matrix.osversion }}-X64.7z mlir -mx9 -aoa  
+          7z a mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-X64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            mlir-19.1.6-${{ matrix.osversion }}-X64.7z
+            mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-X64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
@@ -61,10 +64,10 @@ jobs:
     env:
       VCPKG_DEP_LIST: arm64-linux
       VCPKG_FEATURE_FLAGS: -binarycaching
-    runs-on: [self-hosted, linux, ARM64, dep-builder]
+    runs-on: [self-hosted, linux, arm64]
     strategy:
       matrix:
-        osversion: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+        osversion: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - uses: AutoModality/action-clean@v1
       - uses: actions/checkout@v2
@@ -85,13 +88,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-19.1.6-${{ matrix.osversion }}-arm64.7z mlir -mx9 -aoa  
+          7z a mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-arm64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            mlir-19.1.6-${{ matrix.osversion }}-arm64.7z
+            mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-arm64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
@@ -111,7 +114,7 @@ jobs:
     env:
       VCPKG_DEP_LIST: arm64-osx
       VCPKG_FEATURE_FLAGS: -binarycaching
-    runs-on: [self-hosted, macos, ARM64]
+    runs-on: [macos-15]
     steps:
       - uses: lukka/get-cmake@latest
       - uses: actions/checkout@v2
@@ -128,49 +131,16 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-19.1.6-osx-arm64.7z mlir -mx9 -aoa  
+          7z a mlir-${{ env.MLIR_VERSION }}-osx-arm64.7z mlir -mx9 -aoa  
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            mlir-19.1.6-osx-arm64.7z
+            mlir-${{ env.MLIR_VERSION }}-osx-arm64.7z
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
         run: |
           rm -rf mlir
-  build-x64-osx:
-    timeout-minutes: 360
-    env:
-      VCPKG_DEP_LIST: x64-osx
-      VCPKG_FEATURE_FLAGS: -binarycaching
-    runs-on: [ self-hosted, macos, X64, dep-builder ]
-    steps:
-      - uses: lukka/get-cmake@latest
-      - uses: actions/checkout@v2
-        with:
-          submodules: 'recursive'
-      - name: Set output vars to the actual tag name
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-      - name: Build OSX x64 MLIR
-        id: buildmlir
-        run: |
-          ${{ github.workspace }}/build_osx-x64.sh
-        shell: bash
-      - name: Compress artifacts
-        id: compressdeps
-        run: |
-          7z a mlir-19.1.6-osx-x64.7z mlir -mx9 -aoa  
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        id: createrelease
-        with:
-          files: |
-            mlir-19.1.6-osx-x64.7z
-      - name: Clean build artifacts
-        id: cleanbuildartifacts
-        if: always()
-        run: |
-          sudo rm -rf mlir
+  
