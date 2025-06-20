@@ -6,11 +6,10 @@ RUN apt-get update -qq && DEBIAN_FRONTEND="noninteractive" apt-get install -qq \
   python2 \
   python3 \
   tar \
-  p7zip-full \
   cmake \
   software-properties-common \
   build-essential \
-  curl zip unzip tar \  
+  curl zip unzip tar \
   pkg-config \
   ninja-build \
   && apt-get clean -qq

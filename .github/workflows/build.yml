@@ -39,13 +39,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-X64.7z mlir -mx9 -aoa  
+          tar -czf mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-X64.tar.gz mlir
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-X64.7z
+            mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-X64.tar.gz
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
@@ -88,13 +88,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-arm64.7z mlir -mx9 -aoa  
+          tar -czf mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-arm64.tar.gz mlir
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-arm64.7z
+            mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-arm64.tar.gz
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
@@ -131,13 +131,13 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          7z a mlir-${{ env.MLIR_VERSION }}-osx-arm64.7z mlir -mx9 -aoa  
+          tar -czf mlir-${{ env.MLIR_VERSION }}-osx-arm64.tar.gz mlir
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
           files: |
-            mlir-${{ env.MLIR_VERSION }}-osx-arm64.7z
+            mlir-${{ env.MLIR_VERSION }}-osx-arm64.tar.gz
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
