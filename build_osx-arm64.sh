@@ -16,6 +16,7 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 				-DCMAKE_INSTALL_PREFIX="../mlir" \
 				-DLLVM_TARGETS_TO_BUILD="AArch64" \
 				-DLLVM_BUILD_TOOLS=OFF \
+				-DLLVM_TOOL_LLVM_DIFF_BUILD=ON \
 				-DLLVM_ENABLE_TERMINFO=OFF \
 				-DLLVM_ENABLE_Z3_SOLVER=OFF \
 				-DCOMPILER_RT_ENABLE_IOS=OFF \
@@ -24,10 +25,10 @@ cmake -G Ninja -S llvm -B build -DCMAKE_BUILD_TYPE=Release \
 ninja -C build 
 #ninja -C build clang-format
 #ninja -C build llvm-cov
-ninja -C build runtimes
+ninja -C build runtimes llvm-diff
 ninja -C build install
 #ninja -C build install llvm-cov
-ninja -C build mlir-libraries mlir-cmake-exports mlir-headers
+ninja -C build mlir-libraries mlir-cmake-exports mlir-headers 
 
 #ninja -C build check-runtimes
 
