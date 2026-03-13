@@ -76,10 +76,6 @@ jobs:
             - Updated `llvm-project` submodule to tag `${{ steps.detect.outputs.tag }}`
             - Updated `MLIR_VERSION` in `build.yml`
 
-            After merging, create a release tag:
-            ```
-            git tag v${{ steps.detect.outputs.new }}
-            git push origin v${{ steps.detect.outputs.new }}
-            ```
+            After merging, trigger the **Create Release Tag** workflow to tag and build.
           branch: update-llvm-${{ steps.detect.outputs.new }}
           base: main
