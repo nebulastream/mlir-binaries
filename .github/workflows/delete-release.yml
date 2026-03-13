@@ -1,0 +1,41 @@
+name: Delete Release Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to delete (e.g. 22.1.1). The "v" prefix is added automatically.'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  delete-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Delete tag and release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ github.event.inputs.version }}"
+
+          git fetch --tags
+          if ! git rev-parse "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} does not exist."
+            exit 1
+          fi
+
+          # Delete the GitHub release if it exists
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release delete "${TAG}" --yes
+            echo "Deleted GitHub release ${TAG}"
+          fi
+
+          # Delete the remote tag
+          git push origin --delete "refs/tags/${TAG}"
+          echo "Deleted remote tag ${TAG}"
