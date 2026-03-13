@@ -14,8 +14,13 @@ permissions:
 jobs:
   create-tag:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      created: ${{ steps.create.outcome == 'success' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Determine version
         id: version
@@ -34,19 +39,22 @@ jobs:
       - name: Check if tag already exists
         id: check
         run: |
+          git fetch --tags
           if git rev-parse "refs/tags/${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Tag ${{ steps.version.outputs.tag }} already exists."
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.version.outputs.tag }} already exists — skipping."
+            exit 1
           fi
 
       - name: Create and push tag
-        if: steps.check.outputs.exists == 'false'
+        id: create
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
           git push origin "${{ steps.version.outputs.tag }}"
           echo "Created and pushed tag ${{ steps.version.outputs.tag }}"
-          echo "This will trigger the NES MLIR builder workflow."
+
+  build:
+    needs: create-tag
+    if: needs.create-tag.outputs.created == 'success'
+    uses: ./.github/workflows/build.yml
