@@ -1,0 +1,85 @@
+name: Bump LLVM Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'LLVM version to bump to (e.g. 22.1.0). Leave empty to auto-detect latest.'
+        required: false
+        default: ''
+  schedule:
+    # Run weekly on Monday at 08:00 UTC
+    - cron: '0 8 * * 1'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-llvm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      - name: Determine latest LLVM release
+        id: detect
+        run: |
+          cd llvm-project
+          git fetch origin --tags
+
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            NEW_VERSION="${{ github.event.inputs.version }}"
+          else
+            NEW_VERSION=$(git tag -l 'llvmorg-*' \
+              | grep -E '^llvmorg-[0-9]+\.[0-9]+\.[0-9]+$' \
+              | sort -V \
+              | tail -1 \
+              | sed 's/^llvmorg-//')
+          fi
+
+          CURRENT_VERSION=$(grep -oP '^\s*MLIR_VERSION:\s*\K.*' .github/workflows/build.yml | tr -d '[:space:]')
+
+          echo "current=${CURRENT_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "new=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=llvmorg-${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+
+          if [ "${CURRENT_VERSION}" = "${NEW_VERSION}" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Already at LLVM ${NEW_VERSION}. Nothing to do."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "Will bump from ${CURRENT_VERSION} to ${NEW_VERSION}"
+          fi
+
+      - name: Bump LLVM submodule
+        if: steps.detect.outputs.skip == 'false'
+        run: |
+          cd llvm-project
+          git reset --hard "${{ steps.detect.outputs.tag }}"
+          cd ..
+          sed -i "s/^  MLIR_VERSION: .*/  MLIR_VERSION: ${{ steps.detect.outputs.new }}/" .github/workflows/build.yml
+
+      - name: Create Pull Request
+        if: steps.detect.outputs.skip == 'false'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "update to llvm ${{ steps.detect.outputs.new }}"
+          title: "Update LLVM to ${{ steps.detect.outputs.new }}"
+          body: |
+            Automated LLVM version bump from `${{ steps.detect.outputs.current }}` to `${{ steps.detect.outputs.new }}`.
+
+            Changes:
+            - Updated `llvm-project` submodule to tag `${{ steps.detect.outputs.tag }}`
+            - Updated `MLIR_VERSION` in `build.yml`
+
+            After merging, create a release tag:
+            ```
+            git tag v${{ steps.detect.outputs.new }}
+            git push origin v${{ steps.detect.outputs.new }}
+            ```
+          branch: update-llvm-${{ steps.detect.outputs.new }}
+          base: main
