@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to tag (e.g. 22.1.1). Leave empty to use MLIR_VERSION from build.yml.'
+        description: 'Version to tag (e.g. 22.1.1). Leave empty to use the version in LLVM_VERSION.'
         required: false
         default: ''
 

@@ -14,8 +14,12 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: bump-llvm
+
 jobs:
   bump:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.plan.outputs.tag }}
@@ -25,18 +29,25 @@ jobs:
 
       - name: Determine target LLVM version
         id: plan
+        env:
+          VERSION_INPUT: ${{ github.event.inputs.version }}
         run: |
           set -euo pipefail
           LLVM_REPO=https://github.com/llvm/llvm-project
 
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            NEW_VERSION="${{ github.event.inputs.version }}"
+          if [ -n "${VERSION_INPUT}" ]; then
+            NEW_VERSION="${VERSION_INPUT}"
           else
             NEW_VERSION=$(git ls-remote --tags "$LLVM_REPO" \
               | awk '{print $2}' \
               | grep -E '^refs/tags/llvmorg-[0-9]+\.[0-9]+\.[0-9]+$' \
               | sed 's|refs/tags/llvmorg-||' \
               | sort -V | tail -1)
+          fi
+
+          if ! [[ "${NEW_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Invalid version '${NEW_VERSION}' — expected X.Y.Z"
+            exit 1
           fi
 
           # Peeled commit SHA of the (annotated) upstream tag; fall back to
