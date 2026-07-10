@@ -1,10 +1,10 @@
-name: Bump LLVM Version
+name: Bump LLVM and Release
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'LLVM version to bump to (e.g. 22.1.0). Leave empty to auto-detect latest.'
+        description: 'LLVM version (e.g. 22.1.9). Leave empty to auto-detect latest.'
         required: false
         default: ''
   schedule:
@@ -13,69 +13,105 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
+
+concurrency:
+  group: bump-llvm
 
 jobs:
-  bump-llvm:
+  bump:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.plan.outputs.tag }}
+      proceed: ${{ steps.plan.outputs.proceed }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: 'recursive'
-          fetch-depth: 0
 
-      - name: Determine latest LLVM release
-        id: detect
+      - name: Determine target LLVM version
+        id: plan
+        env:
+          VERSION_INPUT: ${{ github.event.inputs.version }}
         run: |
-          cd llvm-project
-          git fetch origin --tags
+          set -euo pipefail
+          LLVM_REPO=https://github.com/llvm/llvm-project
 
-          if [ -n "${{ github.event.inputs.version }}" ]; then
-            NEW_VERSION="${{ github.event.inputs.version }}"
+          if [ -n "${VERSION_INPUT}" ]; then
+            NEW_VERSION="${VERSION_INPUT}"
           else
-            NEW_VERSION=$(git tag -l 'llvmorg-*' \
-              | grep -E '^llvmorg-[0-9]+\.[0-9]+\.[0-9]+$' \
-              | sort -V \
-              | tail -1 \
-              | sed 's/^llvmorg-//')
+            NEW_VERSION=$(git ls-remote --tags "$LLVM_REPO" \
+              | awk '{print $2}' \
+              | grep -E '^refs/tags/llvmorg-[0-9]+\.[0-9]+\.[0-9]+$' \
+              | sed 's|refs/tags/llvmorg-||' \
+              | sort -V | tail -1)
           fi
 
-          CURRENT_VERSION=$(grep -oP '^\s*MLIR_VERSION:\s*\K.*' .github/workflows/build.yml | tr -d '[:space:]')
+          if ! [[ "${NEW_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Invalid version '${NEW_VERSION}' — expected X.Y.Z"
+            exit 1
+          fi
 
-          echo "current=${CURRENT_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "new=${NEW_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "tag=llvmorg-${NEW_VERSION}" >> "$GITHUB_OUTPUT"
+          # Peeled commit SHA of the (annotated) upstream tag; fall back to
+          # the plain ref in case it is a lightweight tag.
+          LLVM_SHA=$(git ls-remote "$LLVM_REPO" "refs/tags/llvmorg-${NEW_VERSION}^{}" | awk '{print $1}')
+          if [ -z "$LLVM_SHA" ]; then
+            LLVM_SHA=$(git ls-remote "$LLVM_REPO" "refs/tags/llvmorg-${NEW_VERSION}" | awk '{print $1}')
+          fi
+          if [ -z "$LLVM_SHA" ]; then
+            echo "::error::No tag llvmorg-${NEW_VERSION} found upstream"
+            exit 1
+          fi
+
+          CURRENT_VERSION=$(tr -d '[:space:]' < LLVM_VERSION)
+          TAG="v${NEW_VERSION}"
 
           if [ "${CURRENT_VERSION}" = "${NEW_VERSION}" ]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-            echo "Already at LLVM ${NEW_VERSION}. Nothing to do."
+            BUMP=false
           else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-            echo "Will bump from ${CURRENT_VERSION} to ${NEW_VERSION}"
+            BUMP=true
           fi
 
-      - name: Bump LLVM submodule
-        if: steps.detect.outputs.skip == 'false'
+          if git ls-remote --exit-code origin "refs/tags/${TAG}" >/dev/null; then
+            PROCEED=false
+            echo "Tag ${TAG} already exists — no release to create."
+          else
+            PROCEED=true
+          fi
+
+          {
+            echo "new=${NEW_VERSION}"
+            echo "sha=${LLVM_SHA}"
+            echo "tag=${TAG}"
+            echo "bump=${BUMP}"
+            echo "proceed=${PROCEED}"
+          } >> "$GITHUB_OUTPUT"
+          echo "current=${CURRENT_VERSION} target=${NEW_VERSION} bump=${BUMP} tag=${TAG} create=${PROCEED}"
+
+      - name: Commit version bump to main
+        if: steps.plan.outputs.bump == 'true'
         run: |
-          cd llvm-project
-          git reset --hard "${{ steps.detect.outputs.tag }}"
-          cd ..
-          sed -i "s/^  MLIR_VERSION: .*/  MLIR_VERSION: ${{ steps.detect.outputs.new }}/" .github/workflows/build.yml
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git update-index --cacheinfo "160000,${{ steps.plan.outputs.sha }},llvm-project"
+          echo "${{ steps.plan.outputs.new }}" > LLVM_VERSION
+          git add LLVM_VERSION
+          git commit -m "bump LLVM to ${{ steps.plan.outputs.new }}"
+          git push origin HEAD:main
 
-      - name: Create Pull Request
-        if: steps.detect.outputs.skip == 'false'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "update to llvm ${{ steps.detect.outputs.new }}"
-          title: "Update LLVM to ${{ steps.detect.outputs.new }}"
-          body: |
-            Automated LLVM version bump from `${{ steps.detect.outputs.current }}` to `${{ steps.detect.outputs.new }}`.
+      - name: Create and push release tag
+        if: steps.plan.outputs.proceed == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.plan.outputs.tag }}" -m "Release ${{ steps.plan.outputs.tag }}"
+          git push origin "${{ steps.plan.outputs.tag }}"
 
-            Changes:
-            - Updated `llvm-project` submodule to tag `${{ steps.detect.outputs.tag }}`
-            - Updated `MLIR_VERSION` in `build.yml`
-
-            After merging, trigger the **Create Release Tag** workflow to tag and build.
-          branch: update-llvm-${{ steps.detect.outputs.new }}
-          base: main
+  build:
+    needs: bump
+    if: needs.bump.outputs.proceed == 'true'
+    permissions:
+      contents: write
+    uses: ./.github/workflows/build.yml
+    with:
+      tag: ${{ needs.bump.outputs.tag }}

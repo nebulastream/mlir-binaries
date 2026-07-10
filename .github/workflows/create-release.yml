@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to tag (e.g. 22.1.1). Leave empty to use MLIR_VERSION from build.yml.'
+        description: 'Version to tag (e.g. 22.1.1). Leave empty to use the version in LLVM_VERSION.'
         required: false
         default: ''
 
@@ -28,7 +28,7 @@ jobs:
           if [ -n "${{ github.event.inputs.version }}" ]; then
             VERSION="${{ github.event.inputs.version }}"
           else
-            VERSION=$(grep -oP '^\s*MLIR_VERSION:\s*\K.*' .github/workflows/build.yml | tr -d '[:space:]')
+            VERSION=$(tr -d '[:space:]' < LLVM_VERSION)
           fi
 
           TAG="v${VERSION}"
@@ -56,5 +56,9 @@ jobs:
 
   build:
     needs: create-tag
-    if: needs.create-tag.outputs.created == 'success'
+    if: needs.create-tag.outputs.created == 'true'
+    permissions:
+      contents: write
     uses: ./.github/workflows/build.yml
+    with:
+      tag: ${{ needs.create-tag.outputs.tag }}
