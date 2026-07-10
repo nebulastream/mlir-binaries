@@ -47,11 +47,11 @@ Job `bump`:
   `git ls-remote --tags https://github.com/llvm/llvm-project` — **no submodule checkout**
   (removes the suspected cause of the weekly failures and is much faster). An explicit
   `version` input overrides detection.
-- Compare against `MLIR_VERSION` in `.github/workflows/build.yml` on `main`.
+- Compare against the `LLVM_VERSION` file at the repo root on `main`.
 - If different: point the `llvm-project` submodule at the tag's commit SHA (taken from
   the same `ls-remote` output) with `git update-index --cacheinfo 160000,<sha>,llvm-project`
-  — no submodule clone needed — sed `MLIR_VERSION`, commit directly to `main`, then
-  create annotated tag `vX.Y.Z` on that commit and push both.
+  — no submodule clone needed — write the new version to `LLVM_VERSION`, commit directly
+  to `main`, then create annotated tag `vX.Y.Z` on that commit and push both.
 - If the version is current or tag `vX.Y.Z` already exists: exit green ("nothing to do").
 - Outputs: `tag`, `proceed`.
 
@@ -64,8 +64,9 @@ Job `build` (`if: proceed`): `uses: ./.github/workflows/build.yml` with
   required; used to rerun any/all platforms against an existing tag).
 - Every job: `actions/checkout` with `ref: ${{ inputs.tag || github.ref_name }}`.
 - `softprops/action-gh-release` gets an explicit `tag_name: ${{ inputs.tag || github.ref_name }}`.
-- Artifact names derive the version from the tag (`${TAG#v}`) instead of relying solely on
-  the baked-in `MLIR_VERSION` env (env stays as fallback for the plain tag-push trigger).
+- Artifact names derive the version from the tag (`${TAG#v}`); the `MLIR_VERSION` env is
+  removed from `build.yml` entirely (see Addendum — workflow commits may not touch
+  workflow files).
 - The `on: push: tags: v*` trigger stays as a manual escape hatch.
 
 ### 3. `create-release.yml` fixed, kept as manual utility
@@ -97,3 +98,17 @@ Job `build` (`if: proceed`): `uses: ./.github/workflows/build.yml` with
 - The stateless "build whatever artifacts are missing" reconciler model — possible later
   evolution.
 - Cleaning up existing stale draft releases (one-time manual task).
+
+## Addendum (2026-07-10): root cause confirmed, version storage moved
+
+Step-level data for failed run 26024152860 shows "Determine latest LLVM release" and
+"Bump LLVM submodule" succeeded and **"Create Pull Request" failed** — consistent with
+GitHub's restriction that the default `GITHUB_TOKEN` may not push commits modifying
+`.github/workflows/` files. Every scheduled run since 2026-03-30 (when a new LLVM patch
+release first made the job take the non-skip path) failed there. This same restriction
+would break the new pipeline's direct commit, because the version lived in `build.yml`.
+
+Decision: the current LLVM version moves to a plain `LLVM_VERSION` file at the repo
+root. `bump-llvm.yml` reads and writes that file; `create-release.yml` reads it;
+`build.yml` no longer stores a version at all — every trigger provides a `v<version>`
+tag and jobs derive the version as `${TAG#v}`.
