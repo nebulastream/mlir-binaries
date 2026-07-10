@@ -1,13 +1,23 @@
 name: NES MLIR builder
 
-env:
-  MLIR_VERSION: 22.1.8
-
 on:
   push:
     tags:
       - 'v*'
   workflow_call:
+    inputs:
+      tag:
+        description: 'Release tag to build (e.g. v22.1.8)'
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to build (e.g. v22.1.8)'
+        required: true
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   build-x64-linux:
@@ -24,14 +34,12 @@ jobs:
       - uses: AutoModality/action-clean@v1
       - uses: actions/checkout@v2
         with:
+          ref: ${{ env.RELEASE_TAG }}
           submodules: 'recursive'
-      - name: Set output vars to the actual tag name
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Build Docker
         id: builddocker
         working-directory: ${{ github.workspace }}/docker/
-        run: docker build  -t nes_mlir_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .     
+        run: docker build  -t nes_mlir_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .
       - name: Build MLIR
         id: installdeps
         run: |
@@ -40,18 +48,21 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          tar -czf mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-X64.tar.gz mlir
+          MLIR_VERSION="${RELEASE_TAG#v}"
+          echo "MLIR_VERSION=${MLIR_VERSION}" >> "$GITHUB_ENV"
+          tar -czf "mlir-${MLIR_VERSION}-${{ matrix.osversion }}-X64.tar.gz" mlir
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           files: |
             mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-X64.tar.gz
       - name: Clean build artifacts
         id: cleanbuildartifacts
         if: always()
         run: |
-          rm -rf llvm-project 
+          rm -rf llvm-project
           rm -rf .git
           rm -rf mlir
       - name: Remove docker image
@@ -73,14 +84,12 @@ jobs:
       - uses: AutoModality/action-clean@v1
       - uses: actions/checkout@v2
         with:
+          ref: ${{ env.RELEASE_TAG }}
           submodules: 'recursive'
-      - name: Set output vars to the actual tag name
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Build Docker
         id: builddocker
         working-directory: ${{ github.workspace }}/docker/
-        run: docker build  -t nes_mlir_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .     
+        run: docker build  -t nes_mlir_build_${{ matrix.osversion }} -f Dockerfile-${{ matrix.osversion }} .
       - name: Build MLIR
         id: installdeps
         run: |
@@ -89,11 +98,14 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          tar -czf mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-arm64.tar.gz mlir
+          MLIR_VERSION="${RELEASE_TAG#v}"
+          echo "MLIR_VERSION=${MLIR_VERSION}" >> "$GITHUB_ENV"
+          tar -czf "mlir-${MLIR_VERSION}-${{ matrix.osversion }}-arm64.tar.gz" mlir
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           files: |
             mlir-${{ env.MLIR_VERSION }}-${{ matrix.osversion }}-arm64.tar.gz
       - name: Clean build artifacts
@@ -101,7 +113,7 @@ jobs:
         if: always()
         run: |
           rm -rf mlir
-          rm -rf llvm-project 
+          rm -rf llvm-project
           rm -rf .git
       - name: Remove docker image
         id: removedockerimage
@@ -120,10 +132,8 @@ jobs:
       - uses: lukka/get-cmake@latest
       - uses: actions/checkout@v2
         with:
+          ref: ${{ env.RELEASE_TAG }}
           submodules: 'recursive'
-      - name: Set output vars to the actual tag name
-        id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Build OSX ARM MLIR
         id: buildmlir
         run: |
@@ -132,11 +142,14 @@ jobs:
       - name: Compress artifacts
         id: compressdeps
         run: |
-          tar -czf mlir-${{ env.MLIR_VERSION }}-osx-arm64.tar.gz mlir
+          MLIR_VERSION="${RELEASE_TAG#v}"
+          echo "MLIR_VERSION=${MLIR_VERSION}" >> "$GITHUB_ENV"
+          tar -czf "mlir-${MLIR_VERSION}-osx-arm64.tar.gz" mlir
       - name: Release
         uses: softprops/action-gh-release@v1
         id: createrelease
         with:
+          tag_name: ${{ env.RELEASE_TAG }}
           files: |
             mlir-${{ env.MLIR_VERSION }}-osx-arm64.tar.gz
       - name: Clean build artifacts
@@ -144,4 +157,3 @@ jobs:
         if: always()
         run: |
           rm -rf mlir
-  
